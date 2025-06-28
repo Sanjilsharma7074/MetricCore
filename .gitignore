@@ -1,0 +1,28 @@
+# Node dependencies
+node_modules/
+
+# Compiled JavaScript files
+dist/
+
+# Environment variables
+.env
+
+# OS & editor junk
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# IDE/editor config (optional but recommended)
+.vscode/
+.idea/
+
+# npm debug files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional: coverage reports (if you add tests later)
+coverage/
