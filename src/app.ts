@@ -2,6 +2,8 @@ import express, {Request, Response } from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import testRoutes from './routes/testRoutes';
+import authRoutes from './routes/authRoutes';
+import passport from "./config/passport";
 
 dotenv.config();
 
@@ -17,6 +19,9 @@ app.get("/health", (req : Request, res : Response)=> {
 }) ;
 
 app.use('/api/test',testRoutes);
+
+app.use(passport.initialize());
+app.use("/auth", authRoutes);
 
 
 app.listen(PORT, () => {
