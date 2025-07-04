@@ -1,31 +1,34 @@
-import express from "express";
-import passport from "../config/passport";
+import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
+import { Request } from "express";
 
-const router = express.Router();
+export interface AuthRequest extends Request {
+  user?: any; // Custom property we'll attach after verifying JWT
+}
 
-router.get(
-  "/github",
-  passport.authenticate("github", { scope: ["user:email"] })
-);
+export const protect: RequestHandler = (req, res, next) => {
+  let token;
 
-router.get(
-  "/github/callback",
-  passport.authenticate("github", { failureRedirect: "/auth/error" }),
-  (req, res) => {
-    // req.user is populated by passport's verify callback
-    const user = req.user as any;
-    const token = jwt.sign(
-      { id: user._id, username: user.username },
-      process.env.JWT_SECRET!,
-      { expiresIn: "1h" }
-    );
-    res.json({ message: "Login successful!", token });
+  // Look for token in Authorization header
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer ")
+  ) {
+    token = req.headers.authorization.split(" ")[1];
   }
-);
 
-router.get("/error", (req, res) => {
-  res.status(401).json({ message: "GitHub login failed" });
-});
+  if (!token) {
+    res.status(401).json({ message: "Not authorized, token missing" });
+    return; // ensure void return
+  }
 
-export default router;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+    (req as AuthRequest).user = decoded;
+    next();
+    return; // ensure void return
+  } catch (error) {
+    res.status(401).json({ message: "Not authorized, token invalid" });
+    return; // ensure void return
+  }
+};

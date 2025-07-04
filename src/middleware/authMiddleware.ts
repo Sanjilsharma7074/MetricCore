@@ -1,15 +1,7 @@
-import { Request, Response, NextFunction } from "express";
+import { RequestHandler } from "express";
 import jwt from "jsonwebtoken";
 
-export interface AuthRequest extends Request {
-  user?: any; // attach user info here after verifying JWT
-}
-
-export const protect = (
-  req: AuthRequest,
-  res: Response,
-  next: NextFunction
-) => {
+export const protect: RequestHandler = (req, res, next) => {
   let token;
 
   if (
@@ -20,14 +12,15 @@ export const protect = (
   }
 
   if (!token) {
-    return res.status(401).json({ message: "Not authorized, token missing" });
+    res.status(401).json({ message: "Not authorized, token missing" });
+    return;
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-    req.user = decoded; // attach user info to req
+    (req as any).user = decoded; // ✅ local cast to attach .user
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Not authorized, token invalid" });
+    res.status(401).json({ message: "Not authorized, token invalid" });
   }
 };
